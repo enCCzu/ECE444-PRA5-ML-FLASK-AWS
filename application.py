@@ -58,7 +58,7 @@ def predict():
     # Make prediction
     prediction = loaded_model.predict(text_vectorized)[0]
     
-    if prediction == 1: 
+    if prediction == "FAKE": 
         result = 'FAKE'
     else: 
         result = 'REAL'
