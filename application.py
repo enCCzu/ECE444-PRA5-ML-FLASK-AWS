@@ -21,10 +21,6 @@ app.config.from_object(__name__)
 # temporarily store a dictionary 
 predictions_dict = {}
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    return render_template("index.html", predictions=predictions_dict)
-    
 # Load the model
 def load_model():
     
@@ -39,6 +35,10 @@ def load_model():
     return vectorizer, loaded_model
 
 vectorizer, loaded_model = load_model()
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    return render_template("index.html", predictions=predictions_dict)
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -63,7 +63,7 @@ def predict():
     else: 
         result = 'REAL'
         
-    flash("Prediction: It is {result}!", "success")
+    flash(f"Prediction: It is {result}!", "success")
     
     # Store prediction temporarily
     prediction_id = uuid.uuid4().int
@@ -71,11 +71,14 @@ def predict():
     
     return jsonify({'prediction_id': prediction_id, 'prediction': result}), 200
 
-@app.route("/delete/<int:prediction_id>", methods=["GET"])
+@app.route("/delete/<int:prediction_id>", methods=["DELETE"])
 def delete_prediction(prediction_id):
-    result = {"success": 1}
-    flash("The prediction was deleted.", "success")
-    predictions_dict.pop(prediction_id)
+    if prediction_id in predictions_dict:
+        predictions_dict.pop(prediction_id)
+        result = {"success": 1}
+        flash("The prediction was deleted.", "success")
+    else:
+        result = {"success": 0, "error": "Prediction not found"}
     return jsonify(result), 200
 
 if __name__ == '__main__':
